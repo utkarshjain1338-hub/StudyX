@@ -1,51 +1,43 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { completionsTable, tasksTable } from "@workspace/db";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { requireAuth, type AuthedRequest } from "../middlewares/requireAuth";
 
 const router = Router();
+
+router.use(requireAuth);
 
 function calcStreak(dates: string[]): { current: number; longest: number } {
   if (dates.length === 0) return { current: 0, longest: 0 };
 
   const sorted = [...new Set(dates)].sort().reverse();
-
   const today = new Date().toISOString().split("T")[0];
   const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
 
   let current = 0;
-  let longest = 0;
-  let streak = 0;
-
   const startDate = sorted[0] === today || sorted[0] === yesterday ? sorted[0] : null;
-  if (!startDate) return { current: 0, longest: calcLongest(sorted) };
 
-  let prevDate = new Date(startDate);
-  for (const d of sorted) {
-    const curr = new Date(d);
-    const diff = Math.round((prevDate.getTime() - curr.getTime()) / 86400000);
-    if (diff <= 1) {
-      streak++;
-      prevDate = curr;
-    } else {
-      break;
+  if (startDate) {
+    let prevDate = new Date(startDate);
+    for (const d of sorted) {
+      const curr = new Date(d);
+      const diff = Math.round((prevDate.getTime() - curr.getTime()) / 86400000);
+      if (diff <= 1) {
+        current++;
+        prevDate = curr;
+      } else {
+        break;
+      }
     }
   }
-  current = streak;
 
-  longest = calcLongest(sorted);
-
-  return { current, longest: Math.max(current, longest) };
-}
-
-function calcLongest(sortedDesc: string[]): number {
-  if (sortedDesc.length === 0) return 0;
-  let longest = 1;
+  let longest = dates.length > 0 ? 1 : 0;
   let streak = 1;
-  const sorted = [...sortedDesc].sort();
-  for (let i = 1; i < sorted.length; i++) {
-    const prev = new Date(sorted[i - 1]);
-    const curr = new Date(sorted[i]);
+  const asc = [...new Set(dates)].sort();
+  for (let i = 1; i < asc.length; i++) {
+    const prev = new Date(asc[i - 1]);
+    const curr = new Date(asc[i]);
     const diff = Math.round((curr.getTime() - prev.getTime()) / 86400000);
     if (diff === 1) {
       streak++;
@@ -54,15 +46,21 @@ function calcLongest(sortedDesc: string[]): number {
       streak = 1;
     }
   }
-  return longest;
+  longest = Math.max(current, longest);
+
+  return { current, longest };
 }
 
-router.get("/daily", async (_req, res) => {
-  const completions = await db
-    .select({ date: completionsTable.date })
-    .from(completionsTable);
+router.get("/daily", async (req, res) => {
+  const userId = (req as AuthedRequest).userId;
+  const userTasks = await db.select({ id: tasksTable.id }).from(tasksTable)
+    .where(eq(tasksTable.userId, userId));
+  const userTaskIds = userTasks.map(t => t.id);
 
-  const dates = completions.map((c) => c.date);
+  const completions = await db.select({ date: completionsTable.date, taskId: completionsTable.taskId })
+    .from(completionsTable);
+  const dates = completions.filter(c => userTaskIds.includes(c.taskId)).map(c => c.date);
+
   const { current, longest } = calcStreak(dates);
   const today = new Date().toISOString().split("T")[0];
   const isActiveToday = dates.includes(today);
@@ -71,19 +69,18 @@ router.get("/daily", async (_req, res) => {
   res.json({ currentStreak: current, longestStreak: longest, lastActiveDate, isActiveToday });
 });
 
-router.get("/tasks", async (_req, res) => {
-  const tasks = await db.select().from(tasksTable).orderBy(tasksTable.createdAt);
+router.get("/tasks", async (req, res) => {
+  const userId = (req as AuthedRequest).userId;
+  const tasks = await db.select().from(tasksTable).where(eq(tasksTable.userId, userId))
+    .orderBy(tasksTable.createdAt);
   const allCompletions = await db.select().from(completionsTable);
   const today = new Date().toISOString().split("T")[0];
 
   const result = tasks.map((task) => {
-    const taskDates = allCompletions
-      .filter((c) => c.taskId === task.id)
-      .map((c) => c.date);
+    const taskDates = allCompletions.filter((c) => c.taskId === task.id).map((c) => c.date);
     const { current, longest } = calcStreak(taskDates);
     const isCompletedToday = taskDates.includes(today);
     const lastCompletedDate = taskDates.length > 0 ? [...new Set(taskDates)].sort().reverse()[0] : null;
-
     return {
       taskId: task.id,
       taskName: task.name,

@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const tasksTable = pgTable("tasks", {
   id: serial("id").primaryKey(),
+  userId: text("user_id"),
   name: text("name").notNull(),
   description: text("description"),
   color: text("color").notNull().default("#6366f1"),

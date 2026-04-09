@@ -1,21 +1,26 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { completionsTable } from "@workspace/db";
-import { gte } from "drizzle-orm";
-import { sql } from "drizzle-orm";
+import { completionsTable, tasksTable } from "@workspace/db";
+import { eq, gte } from "drizzle-orm";
+import { requireAuth, type AuthedRequest } from "../middlewares/requireAuth";
 
 const router = Router();
 
-router.get("/weekly", async (_req, res) => {
+router.use(requireAuth);
+
+router.get("/weekly", async (req, res) => {
+  const userId = (req as AuthedRequest).userId;
   const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
 
-  const completions = await db
-    .select()
-    .from(completionsTable)
+  const userTasks = await db.select({ id: tasksTable.id }).from(tasksTable)
+    .where(eq(tasksTable.userId, userId));
+  const userTaskIds = userTasks.map(t => t.id);
+
+  const allCompletions = await db.select().from(completionsTable)
     .where(gte(completionsTable.date, sevenDaysAgo));
+  const completions = allCompletions.filter(c => userTaskIds.includes(c.taskId));
 
   const byDate: Record<string, { completedCount: number; totalMinutes: number; taskIds: number[] }> = {};
-
   for (let i = 6; i >= 0; i--) {
     const d = new Date(Date.now() - i * 86400000).toISOString().split("T")[0];
     byDate[d] = { completedCount: 0, totalMinutes: 0, taskIds: [] };
@@ -30,11 +35,7 @@ router.get("/weekly", async (_req, res) => {
     }
   }
 
-  const result = Object.entries(byDate).map(([date, data]) => ({
-    date,
-    ...data,
-  }));
-
+  const result = Object.entries(byDate).map(([date, data]) => ({ date, ...data }));
   res.json(result);
 });
 

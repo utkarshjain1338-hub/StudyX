@@ -1,9 +1,12 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { completionsTable, tasksTable } from "@workspace/db";
-import { gte } from "drizzle-orm";
+import { eq, gte } from "drizzle-orm";
+import { requireAuth, type AuthedRequest } from "../middlewares/requireAuth";
 
 const router = Router();
+
+router.use(requireAuth);
 
 function calcStreak(dates: string[]): { current: number; longest: number } {
   if (dates.length === 0) return { current: 0, longest: 0 };
@@ -29,7 +32,7 @@ function calcStreak(dates: string[]): { current: number; longest: number } {
     }
   }
 
-  let longest = 1;
+  let longest = dates.length > 0 ? 1 : 0;
   let streak = 1;
   const asc = [...new Set(dates)].sort();
   for (let i = 1; i < asc.length; i++) {
@@ -43,29 +46,31 @@ function calcStreak(dates: string[]): { current: number; longest: number } {
       streak = 1;
     }
   }
-  longest = Math.max(current, longest, dates.length > 0 ? 1 : 0);
+  longest = Math.max(current, longest);
 
   return { current, longest };
 }
 
-router.get("/summary", async (_req, res) => {
-  const tasks = await db.select().from(tasksTable);
+router.get("/summary", async (req, res) => {
+  const userId = (req as AuthedRequest).userId;
+  const tasks = await db.select().from(tasksTable).where(eq(tasksTable.userId, userId));
+
+  const userTaskIds = tasks.map(t => t.id);
   const allCompletions = await db.select().from(completionsTable);
+  const userCompletions = allCompletions.filter(c => userTaskIds.includes(c.taskId));
 
   const today = new Date().toISOString().split("T")[0];
   const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
 
   const completedTodaySet = new Set(
-    allCompletions.filter((c) => c.date === today).map((c) => c.taskId)
+    userCompletions.filter((c) => c.date === today).map((c) => c.taskId)
   );
 
-  const weeklyDates = allCompletions
-    .filter((c) => c.date >= sevenDaysAgo)
-    .map((c) => c.date);
+  const weeklyDates = userCompletions.filter((c) => c.date >= sevenDaysAgo).map((c) => c.date);
   const uniqueWeekDays = new Set(weeklyDates);
   const completionRateThisWeek = uniqueWeekDays.size / 7;
 
-  const allDates = allCompletions.map((c) => c.date);
+  const allDates = userCompletions.map((c) => c.date);
   const { current, longest } = calcStreak(allDates);
 
   res.json({
@@ -73,7 +78,7 @@ router.get("/summary", async (_req, res) => {
     completedToday: completedTodaySet.size,
     currentDailyStreak: current,
     longestDailyStreak: longest,
-    totalCompletionsAllTime: allCompletions.length,
+    totalCompletionsAllTime: userCompletions.length,
     completionRateThisWeek,
   });
 });
