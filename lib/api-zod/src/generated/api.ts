@@ -14,3 +14,159 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary List all tasks
+ */
+export const ListTasksResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  color: zod.string(),
+  category: zod.string().nullish(),
+  targetMinutesPerDay: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListTasksResponse = zod.array(ListTasksResponseItem);
+
+/**
+ * @summary Create a task
+ */
+export const CreateTaskBody = zod.object({
+  name: zod.string(),
+  description: zod.string().nullish(),
+  color: zod.string(),
+  category: zod.string().nullish(),
+  targetMinutesPerDay: zod.number().nullish(),
+});
+
+/**
+ * @summary Get a single task
+ */
+export const GetTaskParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetTaskResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  color: zod.string(),
+  category: zod.string().nullish(),
+  targetMinutesPerDay: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a task
+ */
+export const UpdateTaskParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateTaskBody = zod.object({
+  name: zod.string().optional(),
+  description: zod.string().nullish(),
+  color: zod.string().optional(),
+  category: zod.string().nullish(),
+  targetMinutesPerDay: zod.number().nullish(),
+});
+
+export const UpdateTaskResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  color: zod.string(),
+  category: zod.string().nullish(),
+  targetMinutesPerDay: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a task
+ */
+export const DeleteTaskParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List completions
+ */
+export const ListCompletionsQueryParams = zod.object({
+  taskId: zod.coerce.number().optional(),
+  date: zod.date().optional(),
+});
+
+export const ListCompletionsResponseItem = zod.object({
+  id: zod.number(),
+  taskId: zod.number(),
+  date: zod.coerce.date(),
+  minutesStudied: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  completedAt: zod.coerce.date(),
+});
+export const ListCompletionsResponse = zod.array(ListCompletionsResponseItem);
+
+/**
+ * @summary Mark a task as complete for a date
+ */
+export const MarkCompletionBody = zod.object({
+  taskId: zod.number(),
+  date: zod.coerce.date(),
+  minutesStudied: zod.number().nullish(),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary Unmark a completion
+ */
+export const DeleteCompletionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Get overall daily streak (days where at least one task was completed)
+ */
+export const GetDailyStreakResponse = zod.object({
+  currentStreak: zod.number(),
+  longestStreak: zod.number(),
+  lastActiveDate: zod.coerce.date().nullish(),
+  isActiveToday: zod.boolean(),
+});
+
+/**
+ * @summary Get per-task streak info
+ */
+export const GetTaskStreaksResponseItem = zod.object({
+  taskId: zod.number(),
+  taskName: zod.string(),
+  taskColor: zod.string(),
+  currentStreak: zod.number(),
+  longestStreak: zod.number(),
+  isCompletedToday: zod.boolean(),
+  lastCompletedDate: zod.coerce.date().nullish(),
+});
+export const GetTaskStreaksResponse = zod.array(GetTaskStreaksResponseItem);
+
+/**
+ * @summary Get dashboard summary stats
+ */
+export const GetDashboardSummaryResponse = zod.object({
+  totalTasks: zod.number(),
+  completedToday: zod.number(),
+  currentDailyStreak: zod.number(),
+  longestDailyStreak: zod.number(),
+  totalCompletionsAllTime: zod.number(),
+  completionRateThisWeek: zod.number(),
+});
+
+/**
+ * @summary Get last 7 days completion history
+ */
+export const GetWeeklyHistoryResponseItem = zod.object({
+  date: zod.coerce.date(),
+  completedCount: zod.number(),
+  totalMinutes: zod.number(),
+  taskIds: zod.array(zod.number()),
+});
+export const GetWeeklyHistoryResponse = zod.array(GetWeeklyHistoryResponseItem);

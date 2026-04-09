@@ -10,6 +10,12 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: tasks
+    description: Study task operations
+  - name: completions
+    description: Task completion operations
+  - name: streaks
+    description: Streak operations
 paths:
   /healthz:
     get:
@@ -24,6 +30,221 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List all tasks
+      responses:
+        "200":
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create a task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskBody"
+      responses:
+        "201":
+          description: Created task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /tasks/{id}:
+    get:
+      operationId: getTask
+      tags: [tasks]
+      summary: Get a single task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateTask
+      tags: [tasks]
+      summary: Update a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskBody"
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteTask
+      tags: [tasks]
+      summary: Delete a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /completions:
+    get:
+      operationId: listCompletions
+      tags: [completions]
+      summary: List completions
+      parameters:
+        - name: taskId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: List of completions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Completion"
+    post:
+      operationId: markCompletion
+      tags: [completions]
+      summary: Mark a task as complete for a date
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCompletionBody"
+      responses:
+        "201":
+          description: Completion created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Completion"
+
+  /completions/{id}:
+    delete:
+      operationId: deleteCompletion
+      tags: [completions]
+      summary: Unmark a completion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /streaks/daily:
+    get:
+      operationId: getDailyStreak
+      tags: [streaks]
+      summary: Get overall daily streak (days where at least one task was completed)
+      responses:
+        "200":
+          description: Daily streak info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyStreak"
+
+  /streaks/tasks:
+    get:
+      operationId: getTaskStreaks
+      tags: [streaks]
+      summary: Get per-task streak info
+      responses:
+        "200":
+          description: Task streaks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskStreak"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [streaks]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /history/weekly:
+    get:
+      operationId: getWeeklyHistory
+      tags: [completions]
+      summary: Get last 7 days completion history
+      responses:
+        "200":
+          description: Weekly history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DayHistory"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +255,205 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        color:
+          type: string
+        category:
+          type: string
+          nullable: true
+        targetMinutesPerDay:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - color
+        - createdAt
+
+    CreateTaskBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        color:
+          type: string
+        category:
+          type: string
+          nullable: true
+        targetMinutesPerDay:
+          type: integer
+          nullable: true
+      required:
+        - name
+        - color
+
+    UpdateTaskBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        color:
+          type: string
+        category:
+          type: string
+          nullable: true
+        targetMinutesPerDay:
+          type: integer
+          nullable: true
+
+    Completion:
+      type: object
+      properties:
+        id:
+          type: integer
+        taskId:
+          type: integer
+        date:
+          type: string
+          format: date
+        minutesStudied:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - taskId
+        - date
+        - completedAt
+
+    CreateCompletionBody:
+      type: object
+      properties:
+        taskId:
+          type: integer
+        date:
+          type: string
+          format: date
+        minutesStudied:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+      required:
+        - taskId
+        - date
+
+    DailyStreak:
+      type: object
+      properties:
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        lastActiveDate:
+          type: string
+          format: date
+          nullable: true
+        isActiveToday:
+          type: boolean
+      required:
+        - currentStreak
+        - longestStreak
+        - isActiveToday
+
+    TaskStreak:
+      type: object
+      properties:
+        taskId:
+          type: integer
+        taskName:
+          type: string
+        taskColor:
+          type: string
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        isCompletedToday:
+          type: boolean
+        lastCompletedDate:
+          type: string
+          format: date
+          nullable: true
+      required:
+        - taskId
+        - taskName
+        - taskColor
+        - currentStreak
+        - longestStreak
+        - isCompletedToday
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalTasks:
+          type: integer
+        completedToday:
+          type: integer
+        currentDailyStreak:
+          type: integer
+        longestDailyStreak:
+          type: integer
+        totalCompletionsAllTime:
+          type: integer
+        completionRateThisWeek:
+          type: number
+      required:
+        - totalTasks
+        - completedToday
+        - currentDailyStreak
+        - longestDailyStreak
+        - totalCompletionsAllTime
+        - completionRateThisWeek
+
+    DayHistory:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        completedCount:
+          type: integer
+        totalMinutes:
+          type: integer
+        taskIds:
+          type: array
+          items:
+            type: integer
+      required:
+        - date
+        - completedCount
+        - totalMinutes
+        - taskIds

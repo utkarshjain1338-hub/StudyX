@@ -6,4 +6,15 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./completion";
+export * from "./createCompletionBody";
+export * from "./createTaskBody";
+export * from "./dailyStreak";
+export * from "./dashboardSummary";
+export * from "./dayHistory";
+export * from "./errorResponse";
 export * from "./healthStatus";
+export * from "./listCompletionsParams";
+export * from "./task";
+export * from "./taskStreak";
+export * from "./updateTaskBody";

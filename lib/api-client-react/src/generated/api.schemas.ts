@@ -8,3 +8,87 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export interface Task {
+  id: number;
+  name: string;
+  description?: string | null;
+  color: string;
+  category?: string | null;
+  targetMinutesPerDay?: number | null;
+  createdAt: string;
+}
+
+export interface CreateTaskBody {
+  name: string;
+  description?: string | null;
+  color: string;
+  category?: string | null;
+  targetMinutesPerDay?: number | null;
+}
+
+export interface UpdateTaskBody {
+  name?: string;
+  description?: string | null;
+  color?: string;
+  category?: string | null;
+  targetMinutesPerDay?: number | null;
+}
+
+export interface Completion {
+  id: number;
+  taskId: number;
+  date: string;
+  minutesStudied?: number | null;
+  notes?: string | null;
+  completedAt: string;
+}
+
+export interface CreateCompletionBody {
+  taskId: number;
+  date: string;
+  minutesStudied?: number | null;
+  notes?: string | null;
+}
+
+export interface DailyStreak {
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveDate?: string | null;
+  isActiveToday: boolean;
+}
+
+export interface TaskStreak {
+  taskId: number;
+  taskName: string;
+  taskColor: string;
+  currentStreak: number;
+  longestStreak: number;
+  isCompletedToday: boolean;
+  lastCompletedDate?: string | null;
+}
+
+export interface DashboardSummary {
+  totalTasks: number;
+  completedToday: number;
+  currentDailyStreak: number;
+  longestDailyStreak: number;
+  totalCompletionsAllTime: number;
+  completionRateThisWeek: number;
+}
+
+export interface DayHistory {
+  date: string;
+  completedCount: number;
+  totalMinutes: number;
+  taskIds: number[];
+}
+
+export type ListCompletionsParams = {
+  taskId?: number;
+  date?: string;
+};
