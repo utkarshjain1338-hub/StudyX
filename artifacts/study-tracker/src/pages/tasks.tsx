@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Plus, Edit2, Trash2, Calendar, Flame, Target, Circle, CheckCircle2, Tag } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 import {
   useListTasks,
@@ -35,6 +35,29 @@ const COLORS = [
   "#6366F1", // indigo
   "#14B8A6", // teal
 ];
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 12
+    }
+  }
+};
 
 export default function Tasks() {
   const queryClient = useQueryClient();
@@ -145,42 +168,47 @@ export default function Tasks() {
           <Skeleton className="h-10 w-32" />
         </div>
         <div className="space-y-4">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full" />)}
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="p-8 max-w-4xl mx-auto"
+    >
+      <motion.header variants={itemVariants} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-foreground">Tasks</h1>
-          <p className="text-muted-foreground mt-2 font-sans">
+          <h1 className="text-4xl font-serif font-bold text-foreground tracking-tight">Tasks</h1>
+          <p className="text-muted-foreground mt-2 font-sans text-lg">
             Manage your study habits and daily goals.
           </p>
         </div>
-        <Button onClick={() => { resetForm(); setIsCreateOpen(true); }} className="gap-2 shrink-0">
+        <Button onClick={() => { resetForm(); setIsCreateOpen(true); }} className="gap-2 shrink-0 rounded-full px-6 shadow-md shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all">
           <Plus className="w-4 h-4" />
           New Task
         </Button>
-      </header>
+      </motion.header>
 
       {tasks?.length === 0 ? (
-        <div className="text-center py-16 px-4 border border-dashed rounded-xl bg-card">
-          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
-            <Target className="w-8 h-8 text-muted-foreground" />
+        <motion.div variants={itemVariants} className="text-center py-20 px-4 border border-dashed border-border/60 rounded-3xl bg-background/30 shadow-sm">
+          <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-5 shadow-inner">
+            <Target className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-serif font-medium text-foreground mb-2">No tasks defined</h3>
-          <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+          <h3 className="text-2xl font-serif font-semibold text-foreground mb-3">No tasks defined</h3>
+          <p className="text-muted-foreground mb-8 max-w-sm mx-auto text-lg leading-relaxed">
             Create your first study task to start tracking your progress and building a streak.
           </p>
-          <Button onClick={() => { resetForm(); setIsCreateOpen(true); }}>
+          <Button onClick={() => { resetForm(); setIsCreateOpen(true); }} className="rounded-full px-8 h-12 text-md">
             Create First Task
           </Button>
-        </div>
+        </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <AnimatePresence>
             {tasks?.map((task, i) => {
               const streakInfo = taskStreaks?.find(s => s.taskId === task.id);
@@ -188,31 +216,32 @@ export default function Tasks() {
               return (
                 <motion.div
                   key={task.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.05 }}
-                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                  transition={{ duration: 0.3, delay: i * 0.05 }}
+                  whileHover={{ y: -4 }}
                 >
-                  <Card className="overflow-hidden border-none shadow-sm group hover:shadow-md transition-all">
+                  <Card className="glass-card overflow-hidden border-0 shadow-md h-full flex flex-col group">
                     <div 
-                      className="h-2 w-full"
+                      className="h-2.5 w-full transition-all duration-300 opacity-80 group-hover:opacity-100"
                       style={{ backgroundColor: task.color }}
                     />
-                    <CardContent className="p-5">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="font-semibold text-lg text-foreground leading-tight">
+                    <CardContent className="p-6 flex-1 flex flex-col">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="font-bold text-xl text-foreground leading-tight tracking-tight">
                           {task.name}
                         </h3>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity translate-x-0 md:translate-x-2 md:group-hover:translate-x-0 duration-200">
                           <button 
                             onClick={() => openEdit(task)}
-                            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
+                            className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-xl transition-colors"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button 
                             onClick={() => openDelete(task)}
-                            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -220,27 +249,27 @@ export default function Tasks() {
                       </div>
                       
                       {task.description && (
-                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        <p className="text-muted-foreground mb-6 line-clamp-2 leading-relaxed">
                           {task.description}
                         </p>
                       )}
                       
-                      <div className="flex flex-wrap items-center gap-3 mt-auto pt-4 border-t border-border/50">
+                      <div className="flex flex-wrap items-center gap-3 mt-auto pt-5 border-t border-border/40">
                         {streakInfo?.currentStreak ? (
-                          <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: task.color }}>
-                            <Flame className="w-3.5 h-3.5" />
+                          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider bg-secondary/50 px-3 py-1.5 rounded-full" style={{ color: task.color }}>
+                            <Flame className="w-4 h-4" />
                             <span>{streakInfo.currentStreak} day streak</span>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                            <Circle className="w-3.5 h-3.5" />
+                          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full">
+                            <Circle className="w-4 h-4" />
                             <span>Not started</span>
                           </div>
                         )}
                         
                         {task.category && (
-                          <div className="flex items-center gap-1.5 text-xs font-medium bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">
-                            <Tag className="w-3 h-3" />
+                          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider bg-background border border-border/50 text-foreground px-3 py-1.5 rounded-full shadow-sm">
+                            <Tag className="w-3.5 h-3.5 text-muted-foreground" />
                             {task.category}
                           </div>
                         )}
@@ -251,7 +280,7 @@ export default function Tasks() {
               );
             })}
           </AnimatePresence>
-        </div>
+        </motion.div>
       )}
 
       {/* Create / Edit Dialog */}
@@ -376,6 +405,6 @@ export default function Tasks() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </motion.div>
   );
 }

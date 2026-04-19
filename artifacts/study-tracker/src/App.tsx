@@ -2,14 +2,20 @@ import { useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { ClerkProvider, SignIn, SignUp, Show, useClerk } from "@clerk/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/theme-provider";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import { Sidebar } from "@/components/layout/sidebar";
 import Dashboard from "@/pages/dashboard";
 import Tasks from "@/pages/tasks";
 import History from "@/pages/history";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu, BookOpen } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 // NOTE: in dev this env var will be empty, in prod it will be automatically set
@@ -80,18 +86,59 @@ function HomeRedirect() {
 }
 
 function ProtectedApp() {
+  const [location] = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
   return (
     <>
       <Show when="signed-in">
-        <div className="flex min-h-screen bg-background">
+        <div className="flex flex-col md:flex-row min-h-screen bg-background relative overflow-hidden">
+          {/* Ambient background orbs — subtle in both themes */}
+          <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-primary/[0.05] rounded-full blur-[130px] -translate-x-1/2 -translate-y-1/2 pointer-events-none animate-pulse [animation-duration:10s]" />
+          <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-chart-2/[0.04] rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-chart-4/[0.03] rounded-full blur-[110px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+          
+          {/* Desktop Sidebar */}
           <Sidebar />
-          <main className="flex-1 w-full overflow-y-auto">
-            <Switch>
-              <Route path="/dashboard" component={Dashboard} />
-              <Route path="/tasks" component={Tasks} />
-              <Route path="/history" component={History} />
-              <Route component={NotFound} />
-            </Switch>
+
+          {/* Mobile Header */}
+          <header className="md:hidden flex items-center justify-between px-4 py-4 glass-panel sticky top-0 z-40">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center text-primary">
+                <BookOpen className="w-4 h-4" />
+              </div>
+              <span className="font-serif font-bold text-base text-foreground tracking-tight">Scholar</span>
+            </div>
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-10 w-10">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-64 border-none bg-transparent">
+                <Sidebar className="flex h-full w-full" onLinkClick={() => setIsMobileMenuOpen(false)} />
+              </SheetContent>
+            </Sheet>
+          </header>
+
+          <main className="flex-1 w-full overflow-y-auto relative z-10">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location}
+                initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="min-h-full"
+              >
+                <Switch>
+                  <Route path="/dashboard" component={Dashboard} />
+                  <Route path="/tasks" component={Tasks} />
+                  <Route path="/history" component={History} />
+                  <Route component={NotFound} />
+                </Switch>
+              </motion.div>
+            </AnimatePresence>
           </main>
         </div>
       </Show>
@@ -130,7 +177,7 @@ function ClerkProviderWithRoutes() {
   return (
     <ClerkProvider
       publishableKey={clerkPubKey}
-      proxyUrl={clerkProxyUrl}
+      {...(clerkProxyUrl ? { proxyUrl: clerkProxyUrl } : {})}
       routerPush={(to) => setLocation(stripBase(to))}
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
     >
@@ -152,9 +199,11 @@ function ClerkProviderWithRoutes() {
 
 function App() {
   return (
-    <WouterRouter base={basePath}>
-      <ClerkProviderWithRoutes />
-    </WouterRouter>
+    <ThemeProvider>
+      <WouterRouter base={basePath}>
+        <ClerkProviderWithRoutes />
+      </WouterRouter>
+    </ThemeProvider>
   );
 }
 

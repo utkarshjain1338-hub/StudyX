@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { format, subDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from "date-fns";
 import { Calendar as CalendarIcon, History as HistoryIcon, Clock, CheckCircle2, Flame } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 import {
   useGetWeeklyHistory,
@@ -13,6 +13,29 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 12
+    }
+  }
+};
 
 export default function History() {
   const { data: weeklyHistory, isLoading: isLoadingHistory } = useGetWeeklyHistory();
@@ -36,10 +59,10 @@ export default function History() {
     return (
       <div className="p-8 space-y-6 max-w-5xl mx-auto">
         <Skeleton className="h-10 w-48 mb-8" />
-        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-48 w-full rounded-3xl" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <Skeleton className="h-64" />
-          <Skeleton className="h-64" />
+          <Skeleton className="h-64 rounded-3xl" />
+          <Skeleton className="h-64 rounded-3xl" />
         </div>
       </div>
     );
@@ -49,154 +72,180 @@ export default function History() {
   const historyMap = new Map(weeklyHistory?.map(h => [h.date, h]) || []);
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-8">
-      <header className="mb-8">
-        <h1 className="text-3xl font-serif font-bold text-foreground">History</h1>
-        <p className="text-muted-foreground mt-2 font-sans">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="p-8 max-w-5xl mx-auto space-y-8"
+    >
+      <motion.header variants={itemVariants} className="mb-8">
+        <h1 className="text-4xl font-serif font-bold text-foreground tracking-tight">History</h1>
+        <p className="text-muted-foreground mt-2 font-sans text-lg">
           Look back at what you've achieved. Every session counts.
         </p>
-      </header>
+      </motion.header>
 
       {/* 30-Day Activity Heatmap (Using last 7 days data, rest empty since API only gives weekly) */}
-      <Card className="border-none shadow-sm bg-card overflow-hidden">
-        <CardHeader className="pb-4 border-b">
-          <CardTitle className="font-serif text-lg flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-primary" />
-            Recent Activity
-          </CardTitle>
-          <CardDescription>Your study consistency over time</CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="flex justify-between items-end mb-6">
-            <div>
-              <p className="text-3xl font-serif font-bold text-foreground">{summary?.totalCompletionsAllTime || 0}</p>
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Sessions</p>
+      <motion.div variants={itemVariants}>
+        <Card className="glass-card border-0 shadow-lg overflow-hidden">
+          <CardHeader className="pb-4 border-b border-border/50">
+            <CardTitle className="font-serif text-2xl flex items-center gap-2">
+              <CalendarIcon className="w-5 h-5 text-primary" />
+              Recent Activity
+            </CardTitle>
+            <CardDescription>Your study consistency over time</CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="flex justify-between items-end mb-6">
+              <div>
+                <p className="text-4xl font-serif font-bold text-foreground">{summary?.totalCompletionsAllTime || 0}</p>
+                <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-1">Total Sessions</p>
+              </div>
+              <div className="text-right">
+                <p className="text-4xl font-serif font-bold text-foreground">{Math.round(summary?.completionRateThisWeek || 0)}%</p>
+                <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-1">This Week</p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-serif font-bold text-foreground">{Math.round(summary?.completionRateThisWeek || 0)}%</p>
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">This Week</p>
+
+            <div className="grid grid-cols-6 sm:grid-cols-10 gap-3 pt-2">
+              {last30Days.map((date, i) => {
+                const dateStr = format(date, "yyyy-MM-dd");
+                const dayData = historyMap.get(dateStr);
+                const count = dayData?.completedCount || 0;
+                
+                let intensityClass = "bg-secondary/40";
+                if (count > 0) {
+                  if (count >= 3) intensityClass = "bg-primary text-primary-foreground shadow-[0_0_15px_hsl(var(--primary)/40%)]";
+                  else if (count === 2) intensityClass = "bg-primary/70 text-primary-foreground";
+                  else intensityClass = "bg-primary/35 text-primary-foreground";
+                }
+
+                return (
+                  <motion.div 
+                    key={dateStr}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.01 + 0.1 }}
+                    title={`${format(date, "MMM d, yyyy")}: ${count} completions`}
+                    className={cn(
+                      "aspect-square rounded-xl flex items-center justify-center text-xs font-bold transition-all duration-300 hover:scale-110 hover:z-10 cursor-default border border-border/20",
+                      intensityClass,
+                      isSameDay(date, new Date()) && "ring-2 ring-primary ring-offset-2 ring-offset-background z-20"
+                    )}
+                  >
+                    {count > 0 ? count : ""}
+                  </motion.div>
+                );
+              })}
             </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2 pt-2">
-            {last30Days.map((date, i) => {
-              const dateStr = format(date, "yyyy-MM-dd");
-              const dayData = historyMap.get(dateStr);
-              const count = dayData?.completedCount || 0;
-              const hasActivity = count > 0;
-              
-              // Only color days we actually have data for from the weekly API, or leave blank
-              // Since API only gives last 7 days, older days will appear empty in this UI until the API is expanded
-              
-              let intensityClass = "bg-secondary";
-              if (count > 0) {
-                if (count >= 3) intensityClass = "bg-primary text-primary-foreground";
-                else if (count === 2) intensityClass = "bg-primary/70 text-primary-foreground";
-                else intensityClass = "bg-primary/40 text-primary-foreground";
-              }
-
-              return (
-                <div 
-                  key={dateStr}
-                  title={`${format(date, "MMM d, yyyy")}: ${count} completions`}
-                  className={cn(
-                    "w-8 h-8 rounded flex items-center justify-center text-xs font-medium transition-all duration-300 hover:scale-110 cursor-default",
-                    intensityClass,
-                    isSameDay(date, new Date()) && "ring-2 ring-offset-2 ring-primary ring-offset-background"
-                  )}
-                >
-                  {count > 0 ? count : ""}
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground justify-end">
-            <span>Less</span>
-            <div className="w-3 h-3 rounded bg-secondary" />
-            <div className="w-3 h-3 rounded bg-primary/40" />
-            <div className="w-3 h-3 rounded bg-primary/70" />
-            <div className="w-3 h-3 rounded bg-primary" />
-            <span>More</span>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="flex items-center gap-2 mt-6 text-xs font-medium text-muted-foreground justify-end uppercase tracking-widest">
+              <span>Less</span>
+              <div className="w-3 h-3 rounded-sm bg-secondary" />
+              <div className="w-3 h-3 rounded-sm bg-primary/40" />
+              <div className="w-3 h-3 rounded-sm bg-primary/70" />
+              <div className="w-3 h-3 rounded-sm bg-primary" />
+              <span>More</span>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Task Streaks Leaderboard */}
-        <Card className="border-none shadow-sm bg-card h-full">
-          <CardHeader>
-            <CardTitle className="font-serif text-lg flex items-center gap-2">
-              <Flame className="w-5 h-5 text-accent" />
-              Active Streaks
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {taskStreaks?.filter(t => t.currentStreak > 0).length === 0 ? (
-              <div className="text-center py-10">
-                <Flame className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-muted-foreground text-sm">No active task streaks. Complete a task today to start one!</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {taskStreaks?.filter(t => t.currentStreak > 0)
-                  .sort((a, b) => b.currentStreak - a.currentStreak)
-                  .map((task, i) => (
-                  <div key={task.taskId} className="flex items-center justify-between p-3 rounded-lg border bg-background/50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: task.taskColor }} />
-                      <span className="font-medium text-foreground">{task.taskName}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/10 text-accent font-semibold text-sm">
-                      <Flame className="w-3.5 h-3.5" />
-                      {task.currentStreak} days
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <motion.div variants={itemVariants}>
+          <Card className="glass-card border-0 shadow-lg h-full">
+            <CardHeader>
+              <CardTitle className="font-serif text-2xl flex items-center gap-2">
+                <Flame className="w-6 h-6 text-amber-500 animate-pulse" />
+                Active Streaks
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {taskStreaks?.filter(t => t.currentStreak > 0).length === 0 ? (
+                <div className="text-center py-10">
+                  <Flame className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-muted-foreground text-sm font-medium">No active task streaks. Complete a task today to start one!</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <AnimatePresence>
+                    {taskStreaks?.filter(t => t.currentStreak > 0)
+                      .sort((a, b) => b.currentStreak - a.currentStreak)
+                      .map((task, i) => (
+                      <motion.div 
+                        key={task.taskId} 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.1 + 0.4 }}
+                        className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-background/50 hover:bg-background/80 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: task.taskColor }} />
+                          <span className="font-semibold text-foreground text-lg">{task.taskName}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-500 font-bold text-sm ring-1 ring-amber-500/20">
+                          <Flame className="w-4 h-4" />
+                          {task.currentStreak} days
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Task Performance */}
-        <Card className="border-none shadow-sm bg-card h-full">
-          <CardHeader>
-            <CardTitle className="font-serif text-lg flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-primary" />
-              Task Breakdown
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {tasks?.map(task => {
-                const streakData = taskStreaks?.find(s => s.taskId === task.id);
-                return (
-                  <div key={task.id} className="p-3 rounded-lg bg-secondary/30">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium" style={{ color: task.color }}>{task.name}</span>
-                      <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                        {task.category || 'Uncategorized'}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      <div className="bg-background rounded p-2 text-center border">
-                        <p className="text-xs text-muted-foreground mb-0.5">Current Streak</p>
-                        <p className="font-semibold text-foreground">{streakData?.currentStreak || 0}</p>
-                      </div>
-                      <div className="bg-background rounded p-2 text-center border">
-                        <p className="text-xs text-muted-foreground mb-0.5">Longest Streak</p>
-                        <p className="font-semibold text-foreground">{streakData?.longestStreak || 0}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-              {tasks?.length === 0 && (
-                <p className="text-center text-muted-foreground text-sm py-10">No tasks created yet.</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <motion.div variants={itemVariants}>
+          <Card className="glass-card border-0 shadow-lg h-full">
+            <CardHeader>
+              <CardTitle className="font-serif text-2xl flex items-center gap-2">
+                <CheckCircle2 className="w-6 h-6 text-primary" />
+                Task Breakdown
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <AnimatePresence>
+                  {tasks?.map((task, i) => {
+                    const streakData = taskStreaks?.find(s => s.taskId === task.id);
+                    return (
+                      <motion.div 
+                        key={task.id} 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 + 0.5 }}
+                        className="p-4 rounded-xl bg-secondary/30 border border-border/30 hover:border-primary/20 transition-colors"
+                      >
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="font-semibold text-lg" style={{ color: task.color }}>{task.name}</span>
+                          <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest bg-background px-2 py-1 rounded-md">
+                            {task.category || 'Uncategorized'}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 mt-2">
+                          <div className="bg-background/80 rounded-lg p-3 text-center border border-border/50">
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Current</p>
+                            <p className="font-serif font-bold text-2xl text-foreground">{streakData?.currentStreak || 0}</p>
+                          </div>
+                          <div className="bg-background/80 rounded-lg p-3 text-center border border-border/50">
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Longest</p>
+                            <p className="font-serif font-bold text-2xl text-foreground">{streakData?.longestStreak || 0}</p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+                {tasks?.length === 0 && (
+                  <p className="text-center text-muted-foreground text-sm font-medium py-10">No tasks created yet.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
