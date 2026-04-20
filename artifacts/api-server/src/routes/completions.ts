@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { completionsTable, tasksTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { completionsTable, tasksTable, userProfilesTable } from "@workspace/db";
+import { eq, and, sql } from "drizzle-orm";
 import { requireAuth, type AuthedRequest } from "../middlewares/requireAuth";
 import {
   MarkCompletionBody,
@@ -71,6 +71,19 @@ router.post("/", async (req, res) => {
   }
 
   const [completion] = await db.insert(completionsTable).values(body).returning();
+
+  // Award XP for completion (default 10 XP if not specified on task)
+  const xpReward = task.xpReward || 10;
+  await db.insert(userProfilesTable)
+    .values({
+      userId,
+      totalXp: xpReward,
+    })
+    .onConflictDoUpdate({
+      target: userProfilesTable.userId,
+      set: { totalXp: sql`${userProfilesTable.totalXp} + ${xpReward}` },
+    });
+
   res.status(201).json(completion);
 });
 

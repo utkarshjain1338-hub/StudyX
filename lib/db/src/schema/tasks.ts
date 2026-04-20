@@ -10,6 +10,12 @@ export const tasksTable = pgTable("tasks", {
   color: text("color").notNull().default("#6366f1"),
   category: text("category"),
   targetMinutesPerDay: integer("target_minutes_per_day"),
+  status: text("status").notNull().default("active"), // 'active', 'mitigated', 'locked', 'completed'
+  xpReward: integer("xp_reward").notNull().default(10),
+  prerequisiteTaskId: integer("prerequisite_task_id"),
+  lastReviewedAt: timestamp("last_reviewed_at"),
+  nextReviewAt: timestamp("next_review_at"),
+  difficultyScore: integer("difficulty_score").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

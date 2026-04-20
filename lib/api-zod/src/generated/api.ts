@@ -90,6 +90,33 @@ export const DeleteTaskParams = zod.object({
 });
 
 /**
+ * @summary Submit a spaced repetition review for a task
+ */
+export const ReviewTaskParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const reviewTaskBodyScoreMax = 5;
+
+export const ReviewTaskBody = zod.object({
+  score: zod
+    .number()
+    .min(1)
+    .max(reviewTaskBodyScoreMax)
+    .describe("Quality of review from 1 (poor) to 5 (perfect)"),
+});
+
+export const ReviewTaskResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  color: zod.string(),
+  category: zod.string().nullish(),
+  targetMinutesPerDay: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
  * @summary List completions
  */
 export const ListCompletionsQueryParams = zod.object({

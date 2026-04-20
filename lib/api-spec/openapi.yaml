@@ -130,6 +130,37 @@ paths:
         "204":
           description: Deleted
 
+  /tasks/{id}/review:
+    post:
+      operationId: reviewTask
+      tags: [tasks]
+      summary: Submit a spaced repetition review for a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewTaskBody"
+      responses:
+        "200":
+          description: Task reviewed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /completions:
     get:
       operationId: listCompletions
@@ -326,6 +357,17 @@ components:
         targetMinutesPerDay:
           type: integer
           nullable: true
+
+    ReviewTaskBody:
+      type: object
+      properties:
+        score:
+          type: integer
+          description: "Quality of review from 1 (poor) to 5 (perfect)"
+          minimum: 1
+          maximum: 5
+      required:
+        - score
 
     Completion:
       type: object

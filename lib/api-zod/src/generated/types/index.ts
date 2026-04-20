@@ -15,6 +15,7 @@ export * from "./dayHistory";
 export * from "./errorResponse";
 export * from "./healthStatus";
 export * from "./listCompletionsParams";
+export * from "./reviewTaskBody";
 export * from "./task";
 export * from "./taskStreak";
 export * from "./updateTaskBody";

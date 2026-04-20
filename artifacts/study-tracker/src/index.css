@@ -66,101 +66,29 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* LIGHT MODE */
+/* ============================================================
+   ALWAYS DARK — Single theme, no light mode
+   ============================================================ */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
-  --opaque-button-border-intensity: -8;
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
-
-  /* Warm Ivory + Electric Violet — Premium Light */
-  --background: 38 40% 97%;       /* Warm ivory */
-  --foreground: 235 25% 14%;      /* Near-black navy */
-
-  --border: 38 18% 87%;
-  --input: 38 18% 87%;
-  --ring: 258 70% 58%;
-
-  --card: 0 0% 100%;
-  --card-foreground: 235 25% 14%;
-  --card-border: 38 20% 91%;
-
-  --sidebar: 38 30% 95%;
-  --sidebar-foreground: 235 25% 14%;
-  --sidebar-border: 38 18% 88%;
-  --sidebar-primary: 258 70% 52%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 38 25% 90%;
-  --sidebar-accent-foreground: 235 25% 14%;
-  --sidebar-ring: 258 70% 52%;
-
-  --popover: 0 0% 100%;
-  --popover-foreground: 235 25% 14%;
-  --popover-border: 38 18% 87%;
-
-  --primary: 258 70% 52%;         /* Electric violet */
-  --primary-foreground: 0 0% 100%;
-  --primary-border: 258 70% 42%;
-
-  --secondary: 38 28% 91%;        /* Warm sand */
-  --secondary-foreground: 235 20% 28%;
-  --secondary-border: 38 22% 82%;
-
-  --muted: 38 18% 93%;
-  --muted-foreground: 235 12% 48%;
-  --muted-border: 38 18% 86%;
-
-  --accent: 33 90% 88%;           /* Amber glow */
-  --accent-foreground: 28 80% 28%;
-  --accent-border: 33 70% 78%;
-
-  --destructive: 0 68% 52%;
-  --destructive-foreground: 0 0% 100%;
-  --destructive-border: 0 65% 42%;
-
-  --chart-1: 258 70% 52%;
-  --chart-2: 35 88% 54%;
-  --chart-3: 152 50% 42%;
-  --chart-4: 192 55% 46%;
-  --chart-5: 330 55% 58%;
-
-  --app-font-sans: 'Outfit', sans-serif;
-  --app-font-serif: 'Playfair Display', serif;
-  --app-font-mono: Menlo, monospace;
-  
-  --radius: 0.75rem;
-
-  --shadow-2xs: 0px 1px 2px rgba(0,0,0,0.02);
-  --shadow-xs: 0px 2px 4px rgba(0,0,0,0.03);
-  --shadow-sm: 0px 3px 6px rgba(0,0,0,0.04);
-  --shadow: 0px 4px 12px rgba(0,0,0,0.05);
-  --shadow-md: 0px 8px 24px rgba(0,0,0,0.06);
-  --shadow-lg: 0px 12px 32px rgba(0,0,0,0.08);
-  --shadow-xl: 0px 20px 48px rgba(0,0,0,0.10);
-  --shadow-2xl: 0px 32px 64px rgba(0,0,0,0.12);
-}
-
-.dark {
   --button-outline: rgba(255,255,255, .10);
   --badge-outline: rgba(255,255,255, .05);
   --opaque-button-border-intensity: 9;
   --elevate-1: rgba(255,255,255, .03);
   --elevate-2: rgba(255,255,255, .07);
 
-  /* Deep Space Navy + Indigo — Premium Dark */
-  --background: 232 35% 7%;       /* True deep space navy */
-  --foreground: 220 20% 92%;      /* Cool near-white */
+  /* Deep Space Navy + Indigo */
+  --background: 232 35% 7%;
+  --foreground: 220 20% 92%;
 
   --border: 232 25% 18%;
   --input: 232 25% 18%;
   --ring: 258 80% 68%;
 
-  --card: 232 30% 11%;            /* Slightly elevated navy */
+  --card: 232 30% 11%;
   --card-foreground: 220 20% 92%;
   --card-border: 232 22% 20%;
 
-  --sidebar: 232 35% 6%;          /* Deeper than card */
+  --sidebar: 232 35% 6%;
   --sidebar-foreground: 220 20% 88%;
   --sidebar-border: 232 25% 15%;
   --sidebar-primary: 258 80% 68%;
@@ -173,7 +101,7 @@
   --popover-foreground: 220 20% 92%;
   --popover-border: 232 22% 20%;
 
-  --primary: 258 80% 68%;         /* Vivid indigo/violet */
+  --primary: 258 80% 68%;
   --primary-foreground: 0 0% 100%;
   --primary-border: 258 80% 78%;
 
@@ -185,7 +113,7 @@
   --muted-foreground: 220 12% 58%;
   --muted-border: 232 22% 20%;
 
-  --accent: 35 75% 45%;           /* Deep amber */
+  --accent: 35 75% 45%;
   --accent-foreground: 35 90% 88%;
   --accent-border: 35 65% 55%;
 
@@ -198,6 +126,80 @@
   --chart-3: 152 50% 48%;
   --chart-4: 192 55% 50%;
   --chart-5: 330 55% 62%;
+
+  --app-font-sans: 'Outfit', sans-serif;
+  --app-font-serif: 'Playfair Display', serif;
+  --app-font-mono: Menlo, monospace;
+
+  --radius: 0.75rem;
+
+  --shadow-2xs: 0px 1px 2px rgba(0,0,0,0.04);
+  --shadow-xs: 0px 2px 4px rgba(0,0,0,0.06);
+  --shadow-sm: 0px 3px 6px rgba(0,0,0,0.08);
+  --shadow: 0px 4px 12px rgba(0,0,0,0.12);
+  --shadow-md: 0px 8px 24px rgba(0,0,0,0.16);
+  --shadow-lg: 0px 12px 32px rgba(0,0,0,0.20);
+  --shadow-xl: 0px 20px 48px rgba(0,0,0,0.24);
+  --shadow-2xl: 0px 32px 64px rgba(0,0,0,0.28);
+}
+
+/* ============================================================
+   COMMAND CENTER THEME (SOC / Terminal Aesthetic)
+   ============================================================ */
+.theme-command-center {
+  --background: 180 5% 5%;
+  --foreground: 150 100% 50%;
+
+  --border: 150 100% 20%;
+  --input: 150 100% 10%;
+  --ring: 150 100% 50%;
+
+  --card: 180 5% 7%;
+  --card-foreground: 150 100% 50%;
+  --card-border: 150 100% 25%;
+
+  --sidebar: 180 5% 5%;
+  --sidebar-foreground: 150 100% 50%;
+  --sidebar-border: 150 100% 20%;
+  --sidebar-primary: 150 100% 40%;
+  --sidebar-primary-foreground: 180 5% 5%;
+  --sidebar-accent: 150 100% 15%;
+  --sidebar-accent-foreground: 150 100% 60%;
+  --sidebar-ring: 150 100% 50%;
+
+  --popover: 180 5% 7%;
+  --popover-foreground: 150 100% 50%;
+  --popover-border: 150 100% 25%;
+
+  --primary: 150 100% 40%;
+  --primary-foreground: 180 5% 5%;
+  --primary-border: 150 100% 50%;
+
+  --secondary: 150 100% 15%;
+  --secondary-foreground: 150 100% 50%;
+  --secondary-border: 150 100% 30%;
+
+  --muted: 150 100% 10%;
+  --muted-foreground: 150 50% 40%;
+  --muted-border: 150 100% 20%;
+
+  --accent: 180 100% 50%;
+  --accent-foreground: 180 5% 5%;
+  --accent-border: 180 100% 60%;
+
+  --destructive: 0 100% 50%;
+  --destructive-foreground: 0 0% 0%;
+  --destructive-border: 0 100% 60%;
+
+  --chart-1: 150 100% 50%;
+  --chart-2: 180 100% 50%;
+  --chart-3: 60 100% 50%;
+  --chart-4: 30 100% 50%;
+  --chart-5: 0 100% 50%;
+
+  --app-font-sans: 'Fira Code', 'Courier New', Courier, monospace;
+  --app-font-serif: 'Fira Code', 'Courier New', Courier, monospace;
+  --app-font-mono: 'Fira Code', 'Courier New', Courier, monospace;
 }
 
 @layer base {
@@ -206,21 +208,27 @@
   }
 
   html {
-    transition: background-color 0.4s ease, color 0.4s ease;
+    /* Mobile: respect safe areas for notched/rounded phones */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    transition: background-color 0.4s ease, color 0.3s ease;
+    /* Prevent mobile browser elastic overscroll */
+    overscroll-behavior: none;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif tracking-tight;
   }
 
-  /* Smooth transitions on cards and interactive elements */
-  .glass-card, .glass-panel, .glass {
-    transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+  /* Smooth theme-color scrollbar on mobile WebKit */
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
   }
 }
 
@@ -233,35 +241,18 @@
     color: hsl(var(--muted-foreground));
     pointer-events: none;
   }
-  
-  /* Light mode: clean, solid, crisp white surfaces */
+
+  /* Glassmorphism — always dark */
   .glass {
-    @apply bg-background/95 border border-border/60 shadow-sm;
+    @apply bg-background/40 backdrop-blur-xl border border-white/6 shadow-2xl;
   }
 
-  /* Dark mode: translucent glassmorphism */
-  .dark .glass {
-    @apply bg-background/40 backdrop-blur-xl border-white/6 shadow-2xl;
-  }
-
-  /* Light mode: fully opaque white cards */
   .glass-card {
-    @apply bg-card border border-border/60 shadow-sm transition-all duration-300;
+    @apply bg-card/65 backdrop-blur-lg border border-white/6 shadow-md transition-all duration-300;
   }
 
-  /* Dark mode: translucent card glass */
-  .dark .glass-card {
-    @apply bg-card/65 backdrop-blur-lg border-white/6 shadow-md;
-  }
-
-  /* Light mode: solid sidebar */
   .glass-panel {
-    @apply bg-sidebar border-r border-border/60;
-  }
-
-  /* Dark mode: translucent sidebar with blur */
-  .dark .glass-panel {
-    @apply bg-sidebar/80 backdrop-blur-2xl border-border/40;
+    @apply bg-sidebar/80 backdrop-blur-2xl border-r border-border/40;
   }
 
   .animate-gradient {
@@ -270,21 +261,13 @@
   }
 
   @keyframes animatedgradient {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
   @keyframes shimmer {
-    100% {
-      transform: translateX(100%) skewX(-12deg);
-    }
+    100% { transform: translateX(100%) skewX(-12deg); }
   }
 
   .text-glow {
@@ -295,19 +278,12 @@
     box-shadow: 0 0 25px -5px theme('colors.primary.DEFAULT / 20%');
   }
 
-  .dark .glow-primary {
+  .glow-primary {
     box-shadow: 0 0 40px -10px hsl(258 80% 68% / 35%), 0 0 80px -20px hsl(258 80% 68% / 15%);
   }
 
-  /* Premium gradient mesh background for hero sections */
+  /* Premium gradient mesh background */
   .mesh-bg {
-    background-image:
-      radial-gradient(at 20% 30%, hsl(258 80% 68% / 0.08) 0px, transparent 50%),
-      radial-gradient(at 80% 70%, hsl(35 85% 58% / 0.07) 0px, transparent 50%),
-      radial-gradient(at 50% 0%, hsl(192 55% 50% / 0.05) 0px, transparent 50%);
-  }
-
-  .dark .mesh-bg {
     background-image:
       radial-gradient(at 20% 30%, hsl(258 80% 68% / 0.12) 0px, transparent 50%),
       radial-gradient(at 80% 70%, hsl(35 85% 58% / 0.08) 0px, transparent 50%),

@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
+import { useTheme } from "@/components/theme-provider";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -55,6 +56,8 @@ export default function Dashboard() {
   const { data: taskStreaks, isLoading: isLoadingTasks } = useGetTaskStreaks();
   const { data: weeklyHistory, isLoading: isLoadingWeekly } = useGetWeeklyHistory();
   const { data: todayCompletions } = useListCompletions({ date: today });
+  const { theme } = useTheme();
+  const isCommandCenter = theme === "command-center";
 
   const queryClient = useQueryClient();
 
@@ -119,10 +122,12 @@ export default function Dashboard() {
     >
       <motion.header variants={itemVariants} className="mb-10 mt-4">
         <h1 className="text-4xl font-serif font-bold text-foreground tracking-tight">
-          Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"}.
+          {isCommandCenter ? "SYSTEM STATUS" : `Good ${new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"}.`}
         </h1>
         <p className="text-muted-foreground mt-2 font-sans text-lg">
-          Your daily study space. {taskStreaks?.length ? "Here's what's on the agenda today." : "You haven't set up any tasks yet."}
+          {isCommandCenter 
+            ? (taskStreaks?.length ? "Alerts requiring mitigation." : "System optimal. No active alerts.") 
+            : (taskStreaks?.length ? "Here's what's on the agenda today." : "You haven't set up any tasks yet.")}
         </p>
       </motion.header>
 
@@ -168,7 +173,7 @@ export default function Dashboard() {
                     exit={{ opacity: 0, y: -10 }}
                     className="text-sm mt-5 text-amber-600 dark:text-amber-400 font-medium bg-amber-500/10 px-4 py-1.5 rounded-full ring-1 ring-amber-500/20"
                   >
-                    You're on fire today!
+                    {isCommandCenter ? "CHAIN MAINTAINED" : "You're on fire today!"}
                   </motion.p>
                 ) : (
                   <motion.p 
@@ -178,7 +183,7 @@ export default function Dashboard() {
                     exit={{ opacity: 0, y: -10 }}
                     className="text-sm mt-5 text-muted-foreground"
                   >
-                    Complete a task to extend it
+                    {isCommandCenter ? "AWAITING MITIGATION" : "Complete a task to extend it"}
                   </motion.p>
                 )}
               </AnimatePresence>
@@ -254,11 +259,11 @@ export default function Dashboard() {
           <Card className="glass-card border-0 shadow-lg h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-6">
               <div>
-                <CardTitle className="font-serif text-2xl">Today's Tasks</CardTitle>
-                <CardDescription>Click to mark as complete</CardDescription>
+                <CardTitle className="font-serif text-2xl">{isCommandCenter ? "ACTIVE ALERTS" : "Today's Tasks"}</CardTitle>
+                <CardDescription>{isCommandCenter ? "Click to mitigate" : "Click to mark as complete"}</CardDescription>
               </div>
               <Link href="/tasks" className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors bg-primary/10 px-4 py-2 rounded-full">
-                Manage Tasks
+                {isCommandCenter ? "MANAGE ALERTS" : "Manage Tasks"}
               </Link>
             </CardHeader>
             <CardContent>
@@ -267,11 +272,11 @@ export default function Dashboard() {
                   <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-5">
                     <ListTodo className="w-8 h-8 text-muted-foreground" />
                   </div>
-                  <h3 className="font-semibold text-foreground text-lg mb-2">No tasks yet</h3>
-                  <p className="text-muted-foreground mb-6 max-w-sm mx-auto">Create your first study task to start tracking your progress.</p>
+                  <h3 className="font-semibold text-foreground text-lg mb-2">{isCommandCenter ? "SYSTEM OPTIMAL" : "No tasks yet"}</h3>
+                  <p className="text-muted-foreground mb-6 max-w-sm mx-auto">{isCommandCenter ? "No active alerts requiring mitigation." : "Create your first study task to start tracking your progress."}</p>
                   <Link href="/tasks" className="inline-flex items-center justify-center bg-primary text-primary-foreground h-11 px-6 rounded-full text-sm font-semibold transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5">
                     <Plus className="w-5 h-5 mr-2" />
-                    Create Task
+                    {isCommandCenter ? "GENERATE ALERT" : "Create Task"}
                   </Link>
                 </div>
               ) : (

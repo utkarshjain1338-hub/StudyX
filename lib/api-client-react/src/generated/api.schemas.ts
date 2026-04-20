@@ -39,6 +39,15 @@ export interface UpdateTaskBody {
   targetMinutesPerDay?: number | null;
 }
 
+export interface ReviewTaskBody {
+  /**
+   * Quality of review from 1 (poor) to 5 (perfect)
+   * @minimum 1
+   * @maximum 5
+   */
+  score: number;
+}
+
 export interface Completion {
   id: number;
   taskId: number;

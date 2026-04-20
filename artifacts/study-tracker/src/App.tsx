@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { ClerkProvider, SignIn, SignUp, Show, useClerk } from "@clerk/react";
+import { dark } from "@clerk/themes";
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,13 +13,16 @@ import { Sidebar } from "@/components/layout/sidebar";
 import Dashboard from "@/pages/dashboard";
 import Tasks from "@/pages/tasks";
 import History from "@/pages/history";
+import FocusMode from "@/pages/focus";
+import SkillTree from "@/pages/skill-tree";
+import Leaderboard from "@/pages/leaderboard";
+import Shop from "@/pages/shop";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, BookOpen } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-// NOTE: in dev this env var will be empty, in prod it will be automatically set
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -43,10 +47,16 @@ const queryClient = new QueryClient({
 });
 
 function SignInPage() {
-  // To update login providers, app branding, or OAuth settings use the Auth
-  // pane in the workspace toolbar. More information can be found in the Replit docs.
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex flex-col items-center bg-background">
+      <div className="w-full flex justify-between items-center px-8 py-6 mb-10">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <span className="font-serif font-semibold text-xl tracking-tight text-foreground">STUDY X</span>
+        </div>
+      </div>
       <SignIn
         routing="path"
         path={`${basePath}/sign-in`}
@@ -58,10 +68,16 @@ function SignInPage() {
 }
 
 function SignUpPage() {
-  // To update login providers, app branding, or OAuth settings use the Auth
-  // pane in the workspace toolbar. More information can be found in the Replit docs.
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex flex-col items-center bg-background">
+      <div className="w-full flex justify-between items-center px-8 py-6 mb-10">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <span className="font-serif font-semibold text-xl tracking-tight text-foreground">STUDY X</span>
+        </div>
+      </div>
       <SignUp
         routing="path"
         path={`${basePath}/sign-up`}
@@ -88,16 +104,16 @@ function HomeRedirect() {
 function ProtectedApp() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   return (
     <>
       <Show when="signed-in">
         <div className="flex flex-col md:flex-row min-h-screen bg-background relative overflow-hidden">
-          {/* Ambient background orbs — subtle in both themes */}
+          {/* Ambient background orbs */}
           <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-primary/[0.05] rounded-full blur-[130px] -translate-x-1/2 -translate-y-1/2 pointer-events-none animate-pulse [animation-duration:10s]" />
           <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-chart-2/[0.04] rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 pointer-events-none" />
           <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-chart-4/[0.03] rounded-full blur-[110px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-          
+
           {/* Desktop Sidebar */}
           <Sidebar />
 
@@ -107,7 +123,7 @@ function ProtectedApp() {
               <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center text-primary">
                 <BookOpen className="w-4 h-4" />
               </div>
-              <span className="font-serif font-bold text-base text-foreground tracking-tight">Scholar</span>
+              <span className="font-serif font-bold text-base text-foreground tracking-tight">STUDY X</span>
             </div>
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
@@ -135,6 +151,10 @@ function ProtectedApp() {
                   <Route path="/dashboard" component={Dashboard} />
                   <Route path="/tasks" component={Tasks} />
                   <Route path="/history" component={History} />
+                  <Route path="/focus/:id" component={FocusMode} />
+                  <Route path="/skill-tree" component={SkillTree} />
+                  <Route path="/leaderboard" component={Leaderboard} />
+                  <Route path="/shop" component={Shop} />
                   <Route component={NotFound} />
                 </Switch>
               </motion.div>
@@ -177,6 +197,7 @@ function ClerkProviderWithRoutes() {
   return (
     <ClerkProvider
       publishableKey={clerkPubKey}
+      appearance={{ baseTheme: dark }}
       {...(clerkProxyUrl ? { proxyUrl: clerkProxyUrl } : {})}
       routerPush={(to) => setLocation(stripBase(to))}
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}

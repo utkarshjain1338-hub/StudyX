@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Plus, Edit2, Trash2, Calendar, Flame, Target, Circle, CheckCircle2, Tag } from "lucide-react";
+import { Link } from "wouter";
+import { Plus, Edit2, Trash2, Calendar, Flame, Target, Circle, CheckCircle2, Tag, Brain } from "lucide-react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 import {
@@ -10,6 +11,7 @@ import {
   useUpdateTask,
   useDeleteTask,
   useGetTaskStreaks,
+  useReviewTask,
   getListTasksQueryKey,
   getGetTaskStreaksQueryKey,
   getGetDashboardSummaryQueryKey
@@ -24,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const COLORS = [
   "#8B5CF6", // primary violet
@@ -61,15 +64,18 @@ const itemVariants: Variants = {
 
 export default function Tasks() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const { data: tasks, isLoading } = useListTasks();
   const { data: taskStreaks } = useGetTaskStreaks();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
   
   const [editingTask, setEditingTask] = useState<any>(null);
   const [deletingTask, setDeletingTask] = useState<any>(null);
+  const [reviewingTask, setReviewingTask] = useState<any>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -88,6 +94,10 @@ export default function Tasks() {
         queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
         setIsCreateOpen(false);
         resetForm();
+        toast({ title: "Task created!", description: "Your new task has been saved." });
+      },
+      onError: (err: any) => {
+        toast({ title: "Failed to create task", description: err?.message ?? "Unknown error", variant: "destructive" });
       }
     }
   });
@@ -100,6 +110,10 @@ export default function Tasks() {
         setIsEditOpen(false);
         setEditingTask(null);
         resetForm();
+        toast({ title: "Task updated!", description: "Your changes have been saved." });
+      },
+      onError: (err: any) => {
+        toast({ title: "Failed to update task", description: err?.message ?? "Unknown error", variant: "destructive" });
       }
     }
   });
@@ -112,6 +126,24 @@ export default function Tasks() {
         queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
         setIsDeleteOpen(false);
         setDeletingTask(null);
+        toast({ title: "Task deleted.", description: "The task and its history have been removed." });
+      },
+      onError: (err: any) => {
+        toast({ title: "Failed to delete task", description: err?.message ?? "Unknown error", variant: "destructive" });
+      }
+    }
+  });
+
+  const reviewTask = useReviewTask({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListTasksQueryKey() });
+        setIsReviewOpen(false);
+        setReviewingTask(null);
+        toast({ title: "Task reviewed!", description: "Spaced repetition updated." });
+      },
+      onError: (err: any) => {
+        toast({ title: "Failed to review task", description: err?.message ?? "Unknown error", variant: "destructive" });
       }
     }
   });
@@ -141,6 +173,11 @@ export default function Tasks() {
   const openDelete = (task: any) => {
     setDeletingTask(task);
     setIsDeleteOpen(true);
+  };
+
+  const openReview = (task: any) => {
+    setReviewingTask(task);
+    setIsReviewOpen(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -233,6 +270,21 @@ export default function Tasks() {
                           {task.name}
                         </h3>
                         <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity translate-x-0 md:translate-x-2 md:group-hover:translate-x-0 duration-200">
+                          <Link href={`/focus/${task.id}`}>
+                            <button 
+                              className="p-2 text-muted-foreground hover:text-indigo-500 hover:bg-indigo-500/10 rounded-xl transition-colors"
+                              title="Enter Focus Mode"
+                            >
+                              <Target className="w-4 h-4" />
+                            </button>
+                          </Link>
+                          <button 
+                            onClick={() => openReview(task)}
+                            className="p-2 text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 rounded-xl transition-colors"
+                            title="Review Task"
+                          >
+                            <Brain className="w-4 h-4" />
+                          </button>
                           <button 
                             onClick={() => openEdit(task)}
                             className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-xl transition-colors"
@@ -402,6 +454,37 @@ export default function Tasks() {
             >
               Delete Permanently
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {/* Review Confirmation */}
+      <AlertDialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-serif">Review "{reviewingTask?.name}"</AlertDialogTitle>
+            <AlertDialogDescription>
+              How well did you know this material? Rate from 1 (poor) to 5 (perfect).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-center gap-2 py-4">
+            {[1, 2, 3, 4, 5].map(score => (
+              <Button 
+                key={score}
+                variant={score >= 3 ? "default" : "secondary"}
+                onClick={() => {
+                  if (reviewingTask) {
+                    reviewTask.mutate({ id: reviewingTask.id, data: { score } });
+                  }
+                }}
+                disabled={reviewTask.isPending}
+                className="w-12 h-12 rounded-full text-lg font-bold"
+              >
+                {score}
+              </Button>
+            ))}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={reviewTask.isPending}>Cancel</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -26,6 +26,7 @@ import type {
   ErrorResponse,
   HealthStatus,
   ListCompletionsParams,
+  ReviewTaskBody,
   Task,
   TaskStreak,
   UpdateTaskBody,
@@ -513,6 +514,93 @@ export const useDeleteTask = <
   TContext
 > => {
   return useMutation(getDeleteTaskMutationOptions(options));
+};
+
+/**
+ * @summary Submit a spaced repetition review for a task
+ */
+export const getReviewTaskUrl = (id: number) => {
+  return `/api/tasks/${id}/review`;
+};
+
+export const reviewTask = async (
+  id: number,
+  reviewTaskBody: ReviewTaskBody,
+  options?: RequestInit,
+): Promise<Task> => {
+  return customFetch<Task>(getReviewTaskUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(reviewTaskBody),
+  });
+};
+
+export const getReviewTaskMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reviewTask>>,
+    TError,
+    { id: number; data: BodyType<ReviewTaskBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof reviewTask>>,
+  TError,
+  { id: number; data: BodyType<ReviewTaskBody> },
+  TContext
+> => {
+  const mutationKey = ["reviewTask"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof reviewTask>>,
+    { id: number; data: BodyType<ReviewTaskBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return reviewTask(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReviewTaskMutationResult = NonNullable<
+  Awaited<ReturnType<typeof reviewTask>>
+>;
+export type ReviewTaskMutationBody = BodyType<ReviewTaskBody>;
+export type ReviewTaskMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Submit a spaced repetition review for a task
+ */
+export const useReviewTask = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reviewTask>>,
+    TError,
+    { id: number; data: BodyType<ReviewTaskBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof reviewTask>>,
+  TError,
+  { id: number; data: BodyType<ReviewTaskBody> },
+  TContext
+> => {
+  return useMutation(getReviewTaskMutationOptions(options));
 };
 
 /**

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { BookOpen, LayoutDashboard, ListTodo, History, LogOut, User, Sun, Moon } from "lucide-react";
+import { BookOpen, LayoutDashboard, ListTodo, History, LogOut, User, Terminal, Target, Trophy, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useClerk } from "@clerk/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,11 +9,14 @@ export function Sidebar({ className, onLinkClick }: { className?: string; onLink
   const [location] = useLocation();
   const { user } = useUser();
   const { signOut } = useClerk();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   const links = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/tasks", label: "All Tasks", icon: ListTodo },
+    { href: "/skill-tree", label: "Skill Tree", icon: Target },
+    { href: "/leaderboard", label: "Guilds & Rank", icon: Trophy },
+    { href: "/shop", label: "Loot Shop", icon: ShoppingCart },
     { href: "/history", label: "History", icon: History },
   ];
 
@@ -30,8 +33,8 @@ export function Sidebar({ className, onLinkClick }: { className?: string; onLink
           <BookOpen className="w-5 h-5" />
         </div>
         <div>
-          <h1 className="font-serif font-semibold text-lg text-foreground tracking-tight">Scholar</h1>
-          <p className="text-xs text-muted-foreground font-sans tracking-[0.15em] uppercase">Study Tracker</p>
+          <h1 className="font-serif font-semibold text-lg text-foreground tracking-tight">STUDY X</h1>
+          <p className="text-xs text-muted-foreground font-sans tracking-[0.15em] uppercase">App</p>
         </div>
       </div>
 
@@ -73,55 +76,6 @@ export function Sidebar({ className, onLinkClick }: { className?: string; onLink
         })}
       </nav>
 
-      {/* Theme Toggle */}
-      <div className="px-2 mb-4">
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.96 }}
-          onClick={toggleTheme}
-          className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border border-border/60 bg-secondary/40 hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer group"
-          aria-label="Toggle theme"
-        >
-          <span className="text-xs font-bold uppercase tracking-widest">
-            {theme === "dark" ? "Dark Mode" : "Light Mode"}
-          </span>
-          <div className="relative w-10 h-5 rounded-full bg-border/80 group-hover:bg-primary/20 transition-colors">
-            <motion.div
-              className={cn(
-                "absolute top-0.5 h-4 w-4 rounded-full flex items-center justify-center",
-                theme === "dark" ? "bg-primary shadow-[0_0_8px_hsl(var(--primary)/60%)]" : "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]"
-              )}
-              animate={{ x: theme === "dark" ? 22 : 2 }}
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            >
-              <AnimatePresence mode="wait">
-                {theme === "dark" ? (
-                  <motion.span
-                    key="moon"
-                    initial={{ scale: 0, rotate: -90 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    exit={{ scale: 0, rotate: 90 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Moon className="w-2.5 h-2.5 text-white" />
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="sun"
-                    initial={{ scale: 0, rotate: 90 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    exit={{ scale: 0, rotate: -90 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Sun className="w-2.5 h-2.5 text-amber-800" />
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          </div>
-        </motion.button>
-      </div>
-
       {/* User section */}
       {user && (
         <div className="border-t border-border/30 pt-4 px-0">
@@ -148,15 +102,27 @@ export function Sidebar({ className, onLinkClick }: { className?: string; onLink
               )}
             </div>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => signOut({ redirectUrl: "/" })}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer font-medium"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign out
-          </motion.button>
+          
+          <div className="flex flex-col gap-1">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setTheme(theme === "dark" ? "command-center" : "dark")}
+              className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer font-medium"
+            >
+              <Terminal className="w-4 h-4" />
+              {theme === "command-center" ? "Standard Mode" : "Command Center"}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => signOut({ redirectUrl: "/" })}
+              className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer font-medium"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign out
+            </motion.button>
+          </div>
         </div>
       )}
     </aside>
