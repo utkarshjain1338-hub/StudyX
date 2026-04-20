@@ -85,6 +85,7 @@ router.get("/tasks", async (req, res) => {
       taskId: task.id,
       taskName: task.name,
       taskColor: task.color,
+      targetMinutesPerDay: task.targetMinutesPerDay ?? null,
       currentStreak: current,
       longestStreak: longest,
       isCompletedToday,

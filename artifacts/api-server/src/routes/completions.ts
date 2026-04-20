@@ -61,7 +61,7 @@ router.post("/", async (req, res) => {
     .where(
       and(
         eq(completionsTable.taskId, body.taskId),
-        eq(completionsTable.date, body.date)
+        eq(completionsTable.date, body.date instanceof Date ? body.date.toISOString().slice(0, 10) : body.date)
       )
     );
 
@@ -70,7 +70,11 @@ router.post("/", async (req, res) => {
     return;
   }
 
-  const [completion] = await db.insert(completionsTable).values(body).returning();
+  const insertData = {
+    ...body,
+    date: body.date instanceof Date ? body.date.toISOString().slice(0, 10) : body.date,
+  };
+  const [completion] = await db.insert(completionsTable).values(insertData).returning();
 
   // Award XP for completion (default 10 XP if not specified on task)
   const xpReward = task.xpReward || 10;
@@ -88,7 +92,7 @@ router.post("/", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-  const userId = (req as AuthedRequest).userId;
+  const userId = (req as unknown as AuthedRequest).userId;
   const { id } = DeleteCompletionParams.parse({ id: Number(req.params.id) });
 
   const [completion] = await db.select().from(completionsTable)

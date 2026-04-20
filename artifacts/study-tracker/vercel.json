@@ -1,0 +1,13 @@
+{
+  "framework": "vite",
+  "buildCommand": "pnpm install && pnpm run build",
+  "outputDirectory": "dist/public",
+  "installCommand": "pnpm install",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "env": {
+    "BASE_PATH": "/",
+    "PORT": "5173"
+  }
+}

@@ -439,6 +439,9 @@ components:
           type: string
         taskColor:
           type: string
+        targetMinutesPerDay:
+          type: integer
+          nullable: true
         currentStreak:
           type: integer
         longestStreak:

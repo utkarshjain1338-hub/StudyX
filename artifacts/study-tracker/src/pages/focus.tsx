@@ -80,7 +80,7 @@ export default function FocusMode() {
           data: {
             taskId,
             date: format(new Date(), "yyyy-MM-dd"),
-            minutesSpent: task?.targetMinutesPerDay || 25
+            minutesStudied: task?.targetMinutesPerDay ?? 25,
           }
         });
       }
