@@ -10,6 +10,7 @@ export interface TaskStreak {
   taskId: number;
   taskName: string;
   taskColor: string;
+  targetMinutesPerDay?: number | null;
   currentStreak: number;
   longestStreak: number;
   isCompletedToday: boolean;

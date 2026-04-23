@@ -25,6 +25,7 @@ export const ListTasksResponseItem = zod.object({
   color: zod.string(),
   category: zod.string().nullish(),
   targetMinutesPerDay: zod.number().nullish(),
+  prerequisiteTaskId: zod.number().nullish(),
   createdAt: zod.coerce.date(),
 });
 export const ListTasksResponse = zod.array(ListTasksResponseItem);
@@ -54,6 +55,7 @@ export const GetTaskResponse = zod.object({
   color: zod.string(),
   category: zod.string().nullish(),
   targetMinutesPerDay: zod.number().nullish(),
+  prerequisiteTaskId: zod.number().nullish(),
   createdAt: zod.coerce.date(),
 });
 
@@ -79,6 +81,7 @@ export const UpdateTaskResponse = zod.object({
   color: zod.string(),
   category: zod.string().nullish(),
   targetMinutesPerDay: zod.number().nullish(),
+  prerequisiteTaskId: zod.number().nullish(),
   createdAt: zod.coerce.date(),
 });
 
@@ -113,6 +116,7 @@ export const ReviewTaskResponse = zod.object({
   color: zod.string(),
   category: zod.string().nullish(),
   targetMinutesPerDay: zod.number().nullish(),
+  prerequisiteTaskId: zod.number().nullish(),
   createdAt: zod.coerce.date(),
 });
 
@@ -168,6 +172,7 @@ export const GetTaskStreaksResponseItem = zod.object({
   taskId: zod.number(),
   taskName: zod.string(),
   taskColor: zod.string(),
+  targetMinutesPerDay: zod.number().nullish(),
   currentStreak: zod.number(),
   longestStreak: zod.number(),
   isCompletedToday: zod.boolean(),

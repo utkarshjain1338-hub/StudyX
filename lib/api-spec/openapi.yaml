@@ -312,6 +312,9 @@ components:
         targetMinutesPerDay:
           type: integer
           nullable: true
+        prerequisiteTaskId:
+          type: integer
+          nullable: true
         createdAt:
           type: string
           format: date-time

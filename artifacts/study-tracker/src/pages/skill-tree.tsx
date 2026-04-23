@@ -11,7 +11,7 @@ export default function SkillTree() {
 
   // Very simple layout logic: Group tasks by depth
   const nodes = useMemo(() => {
-    if (!tasks) return [];
+    if (!tasks) return { levels: {} as Record<number, typeof tasks>, maxDepth: 0 };
     
     // Calculate depths
     const depths = new Map<number, number>();
@@ -69,7 +69,7 @@ export default function SkillTree() {
       <div className="relative z-10 max-w-6xl mx-auto flex flex-col items-center gap-16 py-12">
         {nodes.levels && Object.keys(nodes.levels).map((depthStr) => {
           const depth = parseInt(depthStr);
-          const levelTasks = nodes.levels[depth];
+const levelTasks = nodes.levels[depth] || [];
           
           return (
             <div key={depth} className="flex flex-wrap justify-center gap-8 md:gap-16 w-full relative">
@@ -96,10 +96,9 @@ export default function SkillTree() {
                     <div 
                       className={`w-24 h-24 rounded-2xl flex flex-col items-center justify-center border-2 transition-all duration-300
                         ${unlocked 
-                          ? `border-[${task.taskColor}] bg-black/50 shadow-[0_0_20px_${task.taskColor}30] hover:scale-105 hover:shadow-[0_0_30px_${task.taskColor}50] cursor-pointer` 
+                          ? `border-white/20 bg-black/50 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] cursor-pointer` 
                           : 'border-white/10 bg-black/80 text-gray-600 grayscale cursor-not-allowed'
                         }`}
-                      style={unlocked ? { borderColor: task.taskColor, color: task.taskColor } : {}}
                     >
                       {!unlocked ? (
                         <Lock className="w-8 h-8 mb-2" />
@@ -109,7 +108,7 @@ export default function SkillTree() {
                         <Book className="w-8 h-8 mb-2" />
                       )}
                       <span className="text-[10px] font-bold text-center uppercase tracking-wider px-2 line-clamp-2 leading-tight">
-                        {task.taskName}
+                        {task.name}
                       </span>
                     </div>
 

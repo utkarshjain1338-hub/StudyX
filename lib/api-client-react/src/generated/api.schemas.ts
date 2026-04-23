@@ -20,6 +20,7 @@ export interface Task {
   color: string;
   category?: string | null;
   targetMinutesPerDay?: number | null;
+  prerequisiteTaskId?: number | null;
   createdAt: string;
 }
 
