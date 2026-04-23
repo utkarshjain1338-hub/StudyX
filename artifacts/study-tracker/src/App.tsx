@@ -196,7 +196,13 @@ function ClerkAuthTokenSetter() {
   const { getToken } = useAuth();
 
   useEffect(() => {
-    setAuthTokenGetter(() => getToken());
+    setAuthTokenGetter(async () => {
+      try {
+        return await getToken();
+      } catch {
+        return null;
+      }
+    });
   }, [getToken]);
 
   return null;

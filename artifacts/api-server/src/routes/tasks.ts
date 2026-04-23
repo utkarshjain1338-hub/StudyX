@@ -19,7 +19,15 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const userId = (req as AuthedRequest).userId;
-  const body = CreateTaskBody.parse(req.body);
+
+  let body;
+  try {
+    body = CreateTaskBody.parse(req.body);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid task payload", details: (error as Error).message });
+    return;
+  }
+
   const [task] = await db.insert(tasksTable).values({ ...body, userId }).returning();
   res.status(201).json(task);
 });
@@ -39,7 +47,15 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const userId = (req as unknown as AuthedRequest).userId;
   const { id } = UpdateTaskParams.parse({ id: Number(req.params.id) });
-  const body = UpdateTaskBody.parse(req.body);
+
+  let body;
+  try {
+    body = UpdateTaskBody.parse(req.body);
+  } catch (error) {
+    res.status(400).json({ error: "Invalid task payload", details: (error as Error).message });
+    return;
+  }
+
   const [task] = await db.update(tasksTable).set(body)
     .where(and(eq(tasksTable.id, id), eq(tasksTable.userId, userId)))
     .returning();
